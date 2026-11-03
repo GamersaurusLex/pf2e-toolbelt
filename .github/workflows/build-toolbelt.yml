@@ -1,0 +1,29 @@
+name: Build Toolbelt
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/pre-use-physical-item-hook
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pf2e-toolbelt-build
+          path: |
+            scripts/main.js
+            scripts/main.js.map
