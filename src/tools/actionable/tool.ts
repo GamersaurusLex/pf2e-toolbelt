@@ -945,7 +945,7 @@ class ActionableTool extends ModuleTool<ToolSettings> {
                 btn.classList.add("disabled");
             } else {
                 btn.addEventListener("click", (event) => {
-                    usePhysicalItem(event, item);
+                    this.#usePhysicalItem(event, item);
                 });
             }
 
@@ -953,6 +953,31 @@ class ActionableTool extends ModuleTool<ToolSettings> {
         });
 
         Promise.all(itemsPromise);
+    }
+
+    /**
+     * Gives other modules one supported opportunity to take responsibility for
+     * an Actionable physical-item use. A hook listener that returns `false`
+     * must invoke either `use()` or `cancel()` itself.
+     */
+    async #usePhysicalItem(
+        event: Event,
+        item: EquipmentPF2e<ActorPF2e> | ConsumablePF2e<ActorPF2e>,
+    ): Promise<void> {
+        const use = () => usePhysicalItem(event, item);
+        const cancel = () => {
+            const message = this.localize("actionable.item.cancel", item);
+            return ui.notifications.warn(message, { localize: false });
+        };
+        const handled = Hooks.call("pf2e-toolbelt.preUsePhysicalItem", {
+            actor: item.actor,
+            cancel,
+            event,
+            item,
+            use,
+        });
+        if (handled === false) return;
+        await use();
     }
 
     #createActionUseBtn(item: AbilityItemPF2e<ActorPF2e> | FeatPF2e<ActorPF2e>): HTMLButtonElement {
