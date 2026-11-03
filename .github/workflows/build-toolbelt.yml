@@ -18,7 +18,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - run: git clone --depth 1 https://github.com/reonZ/foundry-helpers.git /tmp/foundry-helpers
+      - run: npm ci && npm run build
+        working-directory: /tmp/foundry-helpers
       - run: npm ci
+      - run: rm -rf node_modules/foundry-helpers && cp -R /tmp/foundry-helpers node_modules/foundry-helpers
       - run: npm run build
       # The upstream source currently has unrelated type errors in its region tools.
       # Keep them visible without blocking a runtime build of this focused fork.
